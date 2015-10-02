@@ -8,8 +8,12 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController{
+    
+    @IBOutlet weak var namePlayer1: UITextField!
+    @IBOutlet weak var namePlayer2: UITextField!
 
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -20,6 +24,18 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    @IBAction func namesCorrect(sender: AnyObject) {
+        Player1.name = namePlayer1.text
+        Player2.name = namePlayer2.text
+    }
+
+    @IBAction func chosenLanguage(sender: UISegmentedControl) {
+//        if sender.selectedSegmentIndex == 0{
+//            Lexicon.language = "Dutch"
+//        } else{
+//            Lexicon.language = "English"
+//        }
+    }
 
 }
 
