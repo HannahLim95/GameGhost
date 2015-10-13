@@ -12,15 +12,26 @@ class GameController: UIViewController {
 
     @IBOutlet weak var scorePlayer1: UILabel!
     @IBOutlet weak var scorePlayer2: UILabel!
-    var score1 = Player1.score
-    var score2 = Player2.score
+    @IBOutlet weak var labelTurnPlayer: UILabel!
+    @IBOutlet weak var guessedWord: UITextField!
+    @IBOutlet weak var guessedWordSoFar: UILabel!
     
+    let defaults = NSUserDefaults.standardUserDefaults()
+    var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    
+    var score1 = Player.score1
+    var score2 = Player.score2
+    var playerTurn: String?
+    var newGame : Game = Game()
+    static var loser: String?
+    static var winner: String?
+    
+    // Everytime the view is loaded the scores and the turn of the players and the letters guessed so far have to be shown.
     override func viewDidLoad() {
         super.viewDidLoad()
-        var player1score = String(stringInterpolationSegment: score1)
-        var player2score = String(stringInterpolationSegment: score2)
-        scorePlayer1.text = "Score " + Player1.name! + ": " + player1score
-        scorePlayer2.text = "Score " + Player2.name! + ":" + player2score
+        printScore()
+        playerTurn = defaults.stringForKey("turn")
+        labelTurnPlayer.text = "Turn " + playerTurn!
         // Do any additional setup after loading the view.
     }
 
@@ -29,22 +40,86 @@ class GameController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    // Function print who's turn it is.
-    
-    // Function shows score. By getting the old score from the Players class and adding it with the new score, and sending it back to the Players class.
-    
-    // Function show lettres form players. By getting the letters from the Players class.
-    
-    // Function check word. By getting the dictonairy from the Lexicon class.
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    // This function prints the scores of the players. It gets the scores from the player class. If the game is just began and so the score is 0 (nil) it has to print nil. Otherwise the score.
+    func printScore(){
+        var player1score = String(stringInterpolationSegment: score1)
+        scorePlayer1.text = "Score " + Player.name1! + ": " + player1score
+        var player2score = String(stringInterpolationSegment: score2)
+        scorePlayer2.text = "Score " + Player.name2! + ": " + player2score
     }
-    */
-
+    
+    // This function checks if the letter guessed is a possible letter for a word or the game has ended. If it is a possible guess the next player is (switchUser())
+    @IBAction func buttonCheckLetter(sender: AnyObject) {
+        if (checkLetter() == true){
+            guessedWordSoFar.text = newGame.word
+            addScore()
+            print(score1)
+            switchUser()
+            printScore()
+        } else{
+            endGame()
+        }
+    }
+    
+    func endGame(){
+        print("end game")
+        if(playerTurn == Player.name1){
+            GameController.loser = Player.name1
+            GameController.winner = Player.name2
+        } else{
+            GameController.loser = Player.name2
+            GameController.winner = Player.name1
+        }
+        performSegueWithIdentifier("segueToWinnerLoser", sender: self)
+    }
+        
+    // This function checks if the letter is a possible guess
+    func checkLetter() -> Bool{
+        var test = guessedWord.text
+        let idx = advance(test.startIndex, 0)
+        var firstCharachter = test[idx]
+        var firstLetter = String(firstCharachter)
+        if alphabet.rangeOfString(firstLetter) != nil {
+            println("yes")
+            newGame.guess(firstLetter)
+            if(Lexicon.chosenLanguage == "dutch"){
+                if(newGame.languageDutch.dutchLexicon.count == 0){
+                    return false
+                } else{
+                    return true
+                }
+            } else {
+                if(newGame.languageEnglish.englishLexicon.count == 0){
+                    return false
+                }else {
+                    return true
+                }
+            }
+        } else{
+            print("tryagain")
+            return true
+        }
+    }
+    
+    func addScore(){
+        if(playerTurn == Player.name1){
+            score1 += 10
+            Player.score1 += 10
+        } else{
+            score2 += 10
+            Player.score2 += 10
+        }
+    }
+    
+    // This function switches the text with the person who's turn it is.
+    func switchUser(){
+        if(playerTurn == Player.name1){
+            playerTurn = Player.name2
+        } else{
+            playerTurn = Player.name1
+        }
+        labelTurnPlayer.text = "Turn " + playerTurn!
+        var turnPlayer = playerTurn
+        defaults.setObject(turnPlayer!, forKey: "turn")
+    }
 }
