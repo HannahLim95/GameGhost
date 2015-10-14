@@ -5,17 +5,20 @@
 //  Created by Hannah Lim on 30-09-15.
 //  Copyright (c) 2015 Hannah Lim. All rights reserved.
 //
+//Name: Hannah Lim
+//Student ID: 10588973
 
 import UIKit
 
 class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate{
     
-    @IBOutlet weak var namePlayer1: UITextField!
-    @IBOutlet weak var namePlayer2: UITextField!
+    @IBOutlet weak var textFieldNamePlayer1: UITextField!
+    @IBOutlet weak var textFieldNamePlayer2: UITextField!
     @IBOutlet weak var pickerViewPlayer1: UIPickerView!
     @IBOutlet weak var pickerViewPlayer2: UIPickerView!
     
     let defaults = NSUserDefaults.standardUserDefaults()
+    var newPlayers : Player = Player()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,24 +36,38 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
             var namesPlayersList = [""]
             defaults.setObject(namesPlayersList, forKey: "players")
         }
-        Player.name1 = namePlayer1.text
-        Player.name2 = namePlayer2.text
+        Player.name1 = textFieldNamePlayer1.text
+        Player.name2 = textFieldNamePlayer2.text
+        newPlayers.setName()
         var allPlayersList = defaults.arrayForKey("players")
-        var name1 = namePlayer1.text
-        var name2 = namePlayer2.text
-        allPlayersList!.append(name1)
-        allPlayersList!.append(name2)
-        defaults.setObject(allPlayersList!, forKey: "players")
-        var turnPlayer = name1
-        defaults.setObject(turnPlayer!, forKey: "turn")
+        allPlayersList!.append(Player.name1!)
+        allPlayersList!.append(Player.name2!)
+        var allPlayersListNoDuplicates = removeDuplicates(allPlayersList as! [String])
+        //alles resetten
+        defaults.setObject(allPlayersListNoDuplicates, forKey: "players")
+        defaults.setObject(Player.name1, forKey: "turn")
+        defaults.setObject("gamePlaying", forKey: "statusGame")
+        Player.score1 = 0
+        Player.score2 = 0
+        newPlayers.setScore()
+        defaults.setObject("", forKey: "word")
     }
     
-    func pickerView(pickerViewPlayer: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        if(pickerViewPlayer.restorationIdentifier! == "PickerView1"){
-            namePlayer1.text = defaults.arrayForKey("players")![row] as! String
-        } else{
-            namePlayer2.text = defaults.arrayForKey("players")![row] as! String
+    func removeDuplicates(array: [String]) -> [String] {
+        var encountered = Set<String>()
+        var result: [String] = []
+        for value in array {
+            if encountered.contains(value) {
+                // Do not add a duplicate element.
+            }
+            else {
+                // Add value to the set.
+                encountered.insert(value)
+                // ... Append the value.
+                result.append(value)
+            }
         }
+        return result
     }
     
     // this segmented control sets the chosen language. Initially the language is dutch.
@@ -64,7 +81,30 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
         }
     }
     
+    @IBAction func goToPreviousGame(sender: AnyObject) {
+        print(defaults.stringForKey("statusGame"))
+        shouldPerformSegueWithIdentifier("segueToPreviousGame", sender: self)
+    }
+    
+    
+    override func shouldPerformSegueWithIdentifier(identifier: String!, sender: AnyObject!) -> Bool {
+        if(defaults.stringForKey("statusGame") == "gameEnded"){
+            return false
+        } else{
+            return true
+        }
+    }
+    
     //COMMENTS
+    
+    func pickerView(pickerViewPlayer: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        if(pickerViewPlayer.restorationIdentifier! == "PickerView1"){
+            textFieldNamePlayer1.text = defaults.arrayForKey("players")![row] as! String
+        } else{
+            textFieldNamePlayer2.text = defaults.arrayForKey("players")![row] as! String
+        }
+    }
+    
     func numberOfComponentsInPickerView(pickerViewPlayer1: UIPickerView) -> Int {
         return 1
     }
@@ -76,18 +116,5 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
     func pickerView(pickerViewPlayer1: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String! {
         return defaults.arrayForKey("players")![row] as! String
     }
-    
-    func numberOfComponentsInPickerView2(pickerViewPlayer2: UIPickerView) -> Int {
-        return 1
-    }
-    
-    func pickerView2(pickerViewPlayer2: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return defaults.arrayForKey("players")!.count;
-    }
-    
-    func pickerView2(pickerViewPlayer2: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String! {
-        return defaults.arrayForKey("players")![row] as! String
-    }
-
 }
 
