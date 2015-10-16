@@ -5,8 +5,8 @@
 //  Created by Hannah Lim on 30-09-15.
 //  Copyright (c) 2015 Hannah Lim. All rights reserved.
 //
-//Name: Hannah Lim
-//Student ID: 10588973
+//  Name: Hannah Lim
+//  Student ID: 10588973
 import UIKit
 
 @UIApplicationMain
@@ -14,9 +14,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let defaults = NSUserDefaults.standardUserDefaults()
+        
+        // Check if defaults are set
+        if (defaults.stringForKey("set") == nil) {
+            defaults.setObject("dutch", forKey: "language")
+            defaults.setObject("noGame", forKey: "statusGame")
+            defaults.setObject([], forKey: "players")
+            defaults.setObject(Dictionary<String, Int>(), forKey: "highscore")
+            defaults.setObject(true, forKey: "set")
+        }
         
         return true
     }

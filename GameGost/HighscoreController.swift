@@ -5,77 +5,79 @@
 //  Created by Hannah Lim on 12-10-15.
 //  Copyright (c) 2015 Hannah Lim. All rights reserved.
 //
-//Name: Hannah Lim
-//Student ID: 10588973
+//  Name: Hannah Lim
+//  Student ID: 10588973
 
 import UIKit
 
-class HighscoreController: UIViewController {
-
+class HighscoreController: UIViewController, UITableViewDataSource {
     
-    //UITableViewDelegate, UITableViewDataSource
-    let defaults = NSUserDefaults.standardUserDefaults()
     @IBOutlet weak var tableViewHighscore: UITableView!
+    
+    let defaults = NSUserDefaults.standardUserDefaults()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        self.tableViewHighscore.registerClass(UITableViewCell.self, forCellReuseIdentifier:"cell")
-//        self.tableViewHighscore.dataSource = self
-        makeHighscore()
-
-        // Do any additional setup after loading the view.
+        // If the status of the game is 'gameEnded', makes the new highscore and set the status game to 'noGame'.
+        if(defaults.stringForKey("statusGame") == "gameEnded") {
+            makeHighscore()
+            defaults.setObject("noGame", forKey: "statusGame")
+        }
     }
     
-    @IBAction func buttonGetOutHighscore(sender: AnyObject) {
-        if(defaults.stringForKey("statusGame") == "gameEnded"){
-            performSegueWithIdentifier("segueFromHighscoreToStart", sender: self)
-        } else{
-            performSegueWithIdentifier("segueFromHighscoreToMenu", sender: self)
-        }
-    }
-
-    //functie voegt de scores toe van de spelers aan de highscore. Ik kan ook gaan kijken als de nieuwe score hoger is dan de laagste score die erin staat, bv alleen eerste 10 scores geven)
-    func makeHighscore(){
-        if(defaults.dictionaryForKey("highscore") == nil){
-            let firstHighscore: Dictionary<String, Int> = [Player.name1! : Player.score1, Player.name2! : Player.score2]
-            defaults.setObject(firstHighscore, forKey: "highscore")
-            var test = defaults.dictionaryForKey("highscore")
-        } else{
-            var allHighscores = defaults.dictionaryForKey("highscore")! as! Dictionary<String, Int>
-            print(allHighscores)
-            allHighscores[Player.name1!] = Player.score1
-            allHighscores[Player.name2!] = Player.score2
-            defaults.setObject(allHighscores, forKey: "highscore")
-            var test2 = defaults.dictionaryForKey("highscore")
-            print(test2)
-        }
-    }
-
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-//
-//    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        return defaults.dictionaryForKey("highscore")!.count;
-//    }
-//    
-//    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-//        var cell:UITableViewCell = self.tableViewHighscore.dequeueReusableCellWithIdentifier("cell") as! UITableViewCell
-//        var listHighscores = defaults.dictionaryForKey("highscore")! as! Dictionary<String, String>
-//        //var takeHighscore = listHighscores[indexPath.row] as String
-//        //cell.textLabel!.text = takeHighscore
-//        return cell
-//    }
     
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    // Adds the scores from the current players to the highscore list.
+    func makeHighscore() {
+        if(defaults.dictionaryForKey("highscore") == nil) {
+            let firstHighscore: Dictionary<String, Int> = [defaults.stringForKey("playerName1")! : defaults.integerForKey("playerScore1"), defaults.stringForKey("playerName2")! : defaults.integerForKey("playerScore2")]
+            defaults.setObject(firstHighscore, forKey: "highscore")
+        } else {
+            var allHighscores = defaults.dictionaryForKey("highscore")! as! Dictionary<String, Int>
+        println("errornietdaar")
+            allHighscores[defaults.stringForKey("playerName1")!] = defaults.integerForKey("playerScore1")
+            allHighscores[defaults.stringForKey("playerName1")!] = defaults.integerForKey("playerScore1")
+            defaults.setObject(allHighscores, forKey: "highscore")
+        }
     }
-    */
-
+    
+    // Count the rows necessary in the tableview depending on the count of highscores in the highscore list.
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if(defaults.dictionaryForKey("highscore")?.count == nil){
+            return 0
+        } else{
+            return defaults.dictionaryForKey("highscore")!.count
+        }
+    }
+    
+    // Returns the tableview with the highscore of all the players ever played.
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        println("chaos")
+        // Gets cell in the tableview.
+        var cell = tableView.dequeueReusableCellWithIdentifier("cell") as! UITableViewCell
+        
+        // Sort the highscore list from highest to lowest score.
+        var listHighscores = defaults.dictionaryForKey("highscore")!
+        let sortedHighscoreList = (listHighscores as NSDictionary).keysSortedByValueUsingSelector("compare:")
+        var highscoreListHighToLow = sortedHighscoreList.reverse()
+        var namesForHighscores = highscoreListHighToLow[indexPath.row] as! String
+        
+        // Sets the cell with name and highscore.
+        cell.textLabel!.text = namesForHighscores
+        var scoreForHighscore = String(stringInterpolationSegment: defaults.dictionaryForKey("highscore")![namesForHighscores]!)
+        cell.detailTextLabel?.text = scoreForHighscore
+        return cell
+    }
+    
+    // If 'Menu' is pressed by the players and a game is playing, perform segue 'segueFromHighscoreToMenu'. In another case perform segue 'segueFromHighscoreToStart'.
+    @IBAction func buttonGetOutHighscore(sender: AnyObject) {
+        if(defaults.stringForKey("statusGame") == "playingGame") {
+            performSegueWithIdentifier("segueFromHighscoreToMenu", sender: self)
+        } else {
+            performSegueWithIdentifier("segueFromHighscoreToStart", sender: self)
+        }
+    }
 }
